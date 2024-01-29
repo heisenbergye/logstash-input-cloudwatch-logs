@@ -138,19 +138,24 @@ class LogStash::Inputs::CloudWatch_Logs < LogStash::Inputs::Base
       next_token = nil
       @log_group.each do |group|
         loop do
-          log_groups = @cloudwatch.describe_log_groups(log_group_name_prefix: group, next_token: next_token)
-          groups += log_groups.log_groups.map {|n| n.log_group_name}
+          log_groups = @cloudwatch.describe_log_groups(
+              log_group_name_prefix: group,
+              include_linked_accounts: true,
+              next_token: next_token
+          )
+          groups += log_groups.log_groups.map {|n| n.arn}
           next_token = log_groups.next_token
           @logger.debug("found #{log_groups.log_groups.length} log groups matching prefix #{group}")
           break if next_token.nil?
         end
       end
     else
+      # if false, need arn
       @logger.debug("log_group_prefix not enabled")
       groups = @log_group
     end
     # Move the most recent groups to the end
-    groups.sort{|a,b| priority_of(a) <=> priority_of(b) }
+    return groups.sort{|a,b| priority_of(a) <=> priority_of(b) }
   end # def find_log_groups
 
   private
@@ -184,10 +189,10 @@ class LogStash::Inputs::CloudWatch_Logs < LogStash::Inputs::Base
         @sincedb[group] = 0
       end
       params = {
-          :log_group_name => group,
-          :start_time => @sincedb[group],
-          :interleaved => true,
-          :next_token => next_token
+        :log_group_identifier => group.split(':*')[-1],
+        :start_time => @sincedb[group],
+        :interleaved => true,
+        :next_token => next_token
       }
       resp = @cloudwatch.filter_log_events(params)
 
@@ -211,7 +216,8 @@ class LogStash::Inputs::CloudWatch_Logs < LogStash::Inputs::Base
     @codec.decode(log.message.to_str) do |event|
       event.set("@timestamp", parse_time(log.timestamp))
       event.set("[cloudwatch_logs][ingestion_time]", parse_time(log.ingestion_time))
-      event.set("[cloudwatch_logs][log_group]", group)
+      event.set("[cloudwatch_logs][log_group]", group.split(':')[6])
+      event.set("[cloudwatch_logs][log_group_arn]", group)
       event.set("[cloudwatch_logs][log_stream]", log.log_stream_name)
       event.set("[cloudwatch_logs][event_id]", log.event_id)
       decorate(event)
