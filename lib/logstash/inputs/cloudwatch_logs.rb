@@ -27,6 +27,7 @@ class LogStash::Inputs::CloudWatch_Logs < LogStash::Inputs::Base
 
   default :codec, "plain"
 
+  config :aws_account_id, :validate => :string, :list => true
   # Log group(s) to use as an input. If `log_group_prefix` is set
   # to `true`, then each member of the array is treated as a prefix
   config :log_group, :validate => :string, :list => true
@@ -139,6 +140,7 @@ class LogStash::Inputs::CloudWatch_Logs < LogStash::Inputs::Base
       @log_group.each do |group|
         loop do
           log_groups = @cloudwatch.describe_log_groups(
+              account_identifiers: @aws_account_id,
               log_group_name_prefix: group,
               include_linked_accounts: true,
               next_token: next_token
@@ -213,11 +215,13 @@ class LogStash::Inputs::CloudWatch_Logs < LogStash::Inputs::Base
   private
   def process_log(log, group)
 
+    group_array=group.split(':')
     @codec.decode(log.message.to_str) do |event|
       event.set("@timestamp", parse_time(log.timestamp))
       event.set("[cloudwatch_logs][ingestion_time]", parse_time(log.ingestion_time))
-      event.set("[cloudwatch_logs][log_group]", group.split(':')[6])
-      event.set("[cloudwatch_logs][log_group_arn]", group)
+      event.set("[cloudwatch_logs][log_group]", group_array[6])
+      event.set("[cloudwatch_logs][aws_account]", group_array[4])
+      event.set("[cloudwatch_logs][region]", group_array[3])
       event.set("[cloudwatch_logs][log_stream]", log.log_stream_name)
       event.set("[cloudwatch_logs][event_id]", log.event_id)
       decorate(event)

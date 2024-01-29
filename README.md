@@ -7,6 +7,30 @@
 
 > Stream events from CloudWatch Logs.
 
+# Update Jan 2024
+
+Now it can suppot [CloudWatch cross-account observability](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Unified-Cross-Account.html).
+* logstash should be 8.4.0+
+* default includeLinkedAccounts is `true`, add `aws_account_id` to specify the list of accounts to search. You can specify as many as 20 account IDs in the array. Default it is `null` and returns all log groups in the monitoring account and all log groups in all source accounts that are linked to the monitoring account.
+* if set log_group_prefix to 'false', log_group should be loggroup arn
+
+### Parameters
+| Parameter | Input Type | Required | Default |
+|-----------|------------|----------|---------|
+| aws_account_id | string or Array of strings | No | |
+| log_group | string or Array of strings | Yes | |
+| log_group_prefix | boolean | No | `false` |
+| start_position | `beginning`, `end`, or an Integer | No | `beginning` |
+| sincedb_path | string | No | `$HOME/.sincedb*` |
+| interval | number | No | 60 |
+| aws_credentials_file | string | No | |
+| access_key_id | string | No | |
+| secret_access_key | string | No | |
+| session_token | string | No | |
+| region | string | No | `us-east-1` |
+| codec | string | No | `plain` |
+
+
 # Update July 2023
 Hello, this project has not received any maintenance since May of 2018. It is
 no longer a path I am using professionally, and I can not devote the time to

@@ -7,6 +7,7 @@ require 'aws-sdk'
 describe LogStash::Inputs::CloudWatch_Logs do
   let(:config) {
     {
+        'aws_account_id' => ['123456'],
         'access_key_id' => '1234',
         'secret_access_key' => 'secret',
         'log_group' => ['sample-log-group'],
