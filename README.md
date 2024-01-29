@@ -11,8 +11,8 @@
 
 Now it can suppot [CloudWatch cross-account observability](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Unified-Cross-Account.html).
 * logstash should be 8.4.0+
-* default includeLinkedAccounts is `true`, add `aws_account_id` to specify the list of accounts to search. You can specify as many as 20 account IDs in the array. Default it is `null` and returns all log groups in the monitoring account and all log groups in all source accounts that are linked to the monitoring account.
-* if set log_group_prefix to 'false', log_group should be loggroup arn
+* default `includeLinkedAccounts` is `true`, add `aws_account_id` to specify the list of accounts to search. You can specify as many as 20 account IDs in the array. Default it is `null` and returns all log groups in the monitoring account and all log groups in all source accounts that are linked to the monitoring account.
+* if set `log_group_prefix` to 'false', `log_group` should be loggroups arn
 
 ### Parameters
 | Parameter | Input Type | Required | Default |
